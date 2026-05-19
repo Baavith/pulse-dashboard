@@ -119,7 +119,7 @@ export default function Dashboard() {
   const fetchContent = useCallback(async () => {
     setLoading(true); setLoadCount(n => n+1);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/content", {
         method:"POST", headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
           model:"claude-sonnet-4-20250514", max_tokens:1200,
@@ -128,7 +128,8 @@ export default function Dashboard() {
       });
       const data  = await res.json();
       const txt   = (data.content||[]).map(b=>b.text||"").join("").replace(/\`\`\`json|\`\`\`/g,"").trim();
-      const items = JSON.parse(txt);
+      const json = await res.json();
+      const items = json.items;
       if (Array.isArray(items) && items.length) { dispatch({ type:"SET_CONTENT", payload:items }); showToast(t("contentRefreshed"),"success"); }
       else throw new Error("empty");
     } catch { showToast("Using cached content — API failed","warn"); }
